@@ -6,3 +6,4 @@ vignettes/vignette_files
 vignettes/*\.html
 html$
 \.git
+^\.travis\.yml$
