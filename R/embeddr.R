@@ -27,14 +27,13 @@
 #' used is the degree matrix.
 #' @param p Dimension of the embedded space, default is 2
 #'
-#' @import scater
 #' @importFrom Biobase exprs
 #'
 #' @export
 #' @return An object of class SCESet
 #' 
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 embeddr <- function(sce, genes_for_embedding = NULL, kernel = c("nn", "dist", "heat"), metric = c("correlation", 
@@ -244,12 +243,12 @@ remove_pseudotime <- function(sce) {
 #' @export
 #' @import mclust
 #' @importFrom dplyr select
-#' @importFrom Biobase phenoData
-#' @importFrom Biobase phenoData<-
+#' @importFrom Biobase pData
+#' @importFrom Biobase pData<-
 #'
 #' @return The dataframe M with a new numeric variable `cluster` containing the assigned cluster
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- cluster_embedding(sce)
@@ -258,10 +257,10 @@ cluster_embedding <- function(sce, method = c("mm", "kmeans"), k = NULL) {
     method <- match.arg(method)
     if (method == "kmeans") {
         km <- kmeans(M_xy, k)
-        phenoData(sce)$cluster <- km$cluster
+        pData(sce)$cluster <- km$cluster
     } else if (method == "mm") {
         mc <- Mclust(M_xy, G = k)
-        phenoData(sce)$cluster <- as.factor(mc$classification)
+        pData(sce)$cluster <- as.factor(mc$classification)
     }
     return(sce)
 }
@@ -277,7 +276,6 @@ cluster_embedding <- function(sce, method = c("mm", "kmeans"), k = NULL) {
 #'
 #' @importFrom dplyr select
 #' @importFrom princurve principal.curve
-#' @import scater
 #'
 #' @export
 #'
@@ -289,7 +287,7 @@ cluster_embedding <- function(sce, method = c("mm", "kmeans"), k = NULL) {
 #' \item{proj_dist}{The euclidean distance in the plane from each cell to its projection}}
 #' If a given cell is not in \code{clusters} then the value for each of the above fields is set to \code{NA}.
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -319,10 +317,10 @@ fit_pseudotime <- function(sce, clusters = NULL, ...) {
     trajectory_2[cells_in_cluster] <- pc$s[, 2]
     proj_dist[cells_in_cluster] <- d
     
-    phenoData(sce)$pseudotime <- pseudotime
-    phenoData(sce)$trajectory_1 <- trajectory_1
-    phenoData(sce)$trajectory_2 <- trajectory_2
-    phenoData(sce)$proj_dist <- proj_dist
+    pData(sce)$pseudotime <- pseudotime
+    pData(sce)$trajectory_1 <- trajectory_1
+    pData(sce)$trajectory_2 <- trajectory_2
+    pData(sce)$proj_dist <- proj_dist
     return(sce)
 }
 
@@ -349,7 +347,7 @@ fit_pseudotime <- function(sce, clusters = NULL, ...) {
 #'
 #' @return A \pkg{ggplot2} plot
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' plot_embedding(sce)
@@ -435,7 +433,8 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
     }
     plt <- plt + xlab("Component 1") + ylab("Component 2")
     
-    if (library(cowplot, logical.return = TRUE)) {
+    if ("cowplot" %in% installed.packages()[, "Package"]) {
+        requireNamespace("cowplot")
         plt <- plt + cowplot::theme_cowplot()
     } else {
         plt <- plt + theme_bw()
@@ -451,27 +450,27 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
 #'
 #' Plot a set of genes through pseudotime using smooth LOESS curves.
 #'
-#'  @param sce An object of class \code{SCESet}
-#'  @param nrow Number of rows of plots; passed to \code{facet_wrap}
-#'  @param ncol Number of columns of plots; passed to \code{facet_wrap}
-#'  @param use_short_names Logical If \code{pData(sce)} contains a \code{gene_short_name}
-#'  column (such as in the \pkg{monocle} dataset \code{HSMM}) then the names in the resulting
-#'  plot will be the gene short names.
-#'  @param use_log_scale Logical If TRUE scale_y_log10 is added to plot
-#'  @param facet_wrap_scales Passed to the scales argument in \code{facet_wrap}.
-#'  Should scales be fixed ('fixed', the default), free ('free'), or free in one dimension ('free_x', 'free_y')
-#'  @param color_by What variable should points be coloured by? Must be in \code{pData(sce)} or \code{NULL}
-#'  @param y_lab Y-axis label for plot.
-#'
-#'  @export
-#'  @import ggplot2
-#'  @importFrom reshape2 melt
-#'  @importFrom Biobase fData
-#'
-#'  @return A \pkg{ggplot2} plot
-#'  
-#'  @examples 
-#'  library(scater)
+#' @param sce An object of class \code{SCESet}
+#' @param nrow Number of rows of plots; passed to \code{facet_wrap}
+#' @param ncol Number of columns of plots; passed to \code{facet_wrap}
+#' @param use_short_names Logical If \code{pData(sce)} contains a \code{gene_short_name}
+#' column (such as in the \pkg{monocle} dataset \code{HSMM}) then the names in the resulting
+#' plot will be the gene short names.
+#' @param use_log_scale Logical If TRUE scale_y_log10 is added to plot
+#' @param facet_wrap_scales Passed to the scales argument in \code{facet_wrap}.
+#' Should scales be fixed ('fixed', the default), free ('free'), or free in one dimension ('free_x', 'free_y')
+#' @param color_by What variable should points be coloured by? Must be in \code{pData(sce)} or \code{NULL}
+#' @param y_lab Y-axis label for plot.
+#' 
+#' @export
+#' @import ggplot2
+#' @importFrom reshape2 melt
+#' @importFrom Biobase fData
+#' 
+#' @return A \pkg{ggplot2} plot
+#' 
+#' @examples
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -520,14 +519,14 @@ plot_in_pseudotime <- function(sce, nrow = NULL, ncol = NULL,
 #' @export
 #' @return \code{sce} with the pseudotime reversed.
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
 #' sce <- reverse_pseudotime(sce)
 reverse_pseudotime <- function(sce) {
     reverse <- function(x) -x + max(x) + min(x)
-    phenoData(sce)$pseudotime <- reverse(pData(sce)$pseudotime)
+    pData(sce)$pseudotime <- reverse(pData(sce)$pseudotime)
     return(sce)
 }
 
@@ -546,11 +545,10 @@ reverse_pseudotime <- function(sce) {
 #' @import ggplot2
 #' @importFrom dplyr select
 #' @importFrom plyr mapvalues
-#' @import scater
 #'
 #' @return A ggplot graphic
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' plot_graph(sce)
@@ -604,7 +602,7 @@ plot_graph <- function(sce) {
 #'
 #' @return An object of class AER::tobit
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -634,7 +632,7 @@ fit_pseudotime_model <- function(sce, gene, ...) {
 #'
 #' @return An object returned by AER::tobit
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -668,7 +666,7 @@ fit_null_model <- function(sce, gene) {
 #'
 #' @return An plot object from \code{ggplot}
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -744,7 +742,7 @@ plot_pseudotime_model <- function(sce, models = NULL, n_cores = 2,
 #'
 #' @return The p-value
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -768,7 +766,7 @@ compare_models <- function(model, null_model) {
 #'
 #' @export
 #' @examples 
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -803,7 +801,7 @@ gene_pseudotime_test <- function(sce, gene, full_model = NULL) {
 #'
 #' @export
 #' @examples 
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -832,7 +830,7 @@ pseudotime_test <- function(sce, n_cores = 2) {
 #' @export
 #' @return A list of models returned by AER::tobit
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -868,7 +866,7 @@ fit_pseudotime_models <- function(sce, n_cores = 2, ...) {
 #' @importFrom Biobase featureNames
 #' @export
 #' @examples 
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -911,7 +909,7 @@ predicted_expression <- function(sce, models = NULL, n_cores = 2) {
 #' @export
 #' @return A `ggplot` object
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -952,7 +950,7 @@ plot_pseudotime_density <- function(sce, color_by = NULL, reverse = FALSE) {
 #' @export
 #' @return A ggplot graphic
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -973,11 +971,10 @@ plot_pseudotime_metrics <- function(sce, ...) {
 #' @param window_size The size of the sliding window. By default taken to be half the number of cells
 #'
 #' @export
-#' @importFrom Biobase pData
 #' @return An object of class `data.frame` where each column is a metric (window-averaged pseudotime,
 #' mean, variance, CV2, signal to noise ratio)
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)
@@ -1015,7 +1012,7 @@ calculate_metrics <- function(sce, gene, window_size = NULL) {
 #'
 #' @return A numeric vector of pseudotimes
 #' @examples
-#' library(scater)
+#' library(scaterlegacy)
 #' data('sc_example_counts') ; sce <- newSCESet(countData = sc_example_counts)
 #' sce <- embeddr(sce)
 #' sce <- fit_pseudotime(sce)

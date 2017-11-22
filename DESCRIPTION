@@ -9,7 +9,7 @@ License: GPL-3
 LazyData: true
 biocViews: RNASeq, GeneExpression, Visualization
 Imports:
-  scater, 
+  scaterlegacy, 
   ggplot2,
   princurve,
   plyr,
@@ -32,4 +32,7 @@ Suggests:
   cowplot,
   ggthemes,
   BiocStyle,
+Remotes:
+  dynverse/scaterlegacy
 VignetteBuilder: knitr
+RoxygenNote: 6.0.1

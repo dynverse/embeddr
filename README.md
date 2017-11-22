@@ -8,10 +8,10 @@
 
 #### Install embeddr
 
-First install embeddr and [scater](https://github.com/davismcc/scater):
+First install embeddr and [scaterlegacy](https://github.com/dynverse/scaterlegacy):
 ```r
 library(devtools)
-install_github('davismcc/scater')
+install_github('dynverse/scaterlegacy')
 install_github('kieranrcampbell/embeddr')
 ```
 

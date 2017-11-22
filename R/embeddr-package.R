@@ -2,6 +2,9 @@
 #'
 #' \pkg{embeddr} provides a set of methods for manifold learning on single-cell data followed by 
 #' principal curve fitting to assign a pseudotime to cells.
+#' 
+#' @importFrom scaterlegacy pData<- fData<- cellDist<- cellDist redDim<- redDim
+#' @importFrom Biobase fData pData exprs featureNames
 #'
 #' @name embeddr-package
 #' @docType package
