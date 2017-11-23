@@ -559,7 +559,7 @@ plot_graph <- function(sce) {
     
     df <- dplyr::rename(as.data.frame(redDim(sce)), x = component_1, y = component_2)
     # select(pData(sce), x = component_1, y = component_2)
-    W <- cellDist(sce)
+    W <- as.matrix(cellDist(sce))
     
     diag(W) <- 0
     locs <- which((1 * lower.tri(W) * W) > 0, arr.ind = TRUE)
