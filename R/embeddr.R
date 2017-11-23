@@ -616,7 +616,14 @@ fit_pseudotime_model <- function(sce, gene, ...) {
     if(length(y) != length(t)) stop(" 'gene' must subset 'sce' to a single gene")
     
     min_expr <- sce@lowerDetectionLimit  # see paper
-    b <- bs(t, df = 3)
+    
+    # add check for when all values are below the detection limit, 
+    # so AER::tobit does not throw an error
+    if (all(y <= min_expr)) {
+      y <- runif(length(y), 0, .000001)
+    }
+    
+    b <- splines::bs(t, df = 3)
     fit <- AER::tobit(y ~ b, left = min_expr, ...)
     return(fit)
 }
