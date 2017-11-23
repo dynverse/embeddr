@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dynverse/embeddr.svg?branch=master)](https://travis-ci.org/dynverse/embeddr)
+
 ### embeddr: Laplacian eigenmaps and principal curves for pseudotemporal ordering and clustering of single-cell RNA-seq data
 
 [Preprint on biorxiv](http://biorxiv.org/content/early/2015/09/18/027219)
@@ -12,7 +14,7 @@ First install embeddr and [scaterlegacy](https://github.com/dynverse/scaterlegac
 ```r
 library(devtools)
 install_github('dynverse/scaterlegacy')
-install_github('kieranrcampbell/embeddr')
+install_github('dynverse/embeddr')
 ```
 
 #### Convert data to an SCESet
@@ -50,4 +52,4 @@ diff_gene_test <- pseudotime_test(sce)
 
 #### Further examples
 
-Fully worked examples using the Monocle dataset and the distal lung epithelium dataset (Quake et al.) can be found in the [vignettes/](https://github.com/kieranrcampbell/embeddr/tree/master/vignettes) directory.
+Fully worked examples using the Monocle dataset and the distal lung epithelium dataset (Quake et al.) can be found in the [vignettes/](https://github.com/kieranrcampbell/embeddr/tree/master/vignettes) directory of the original embeddr repository.
