@@ -27,10 +27,10 @@
 #' used is the degree matrix.
 #' @param p Dimension of the embedded space, default is 2
 #'
-#' @importFrom Biobase exprs
-#'
 #' @export
 #' @return An object of class SCESet
+#' 
+#' @importFrom methods validObject
 #' 
 #' @examples
 #' library(scaterlegacy)
@@ -54,7 +54,7 @@ embeddr <- function(sce, genes_for_embedding = NULL, kernel = c("nn", "dist", "h
     redDim(sce) <- as.matrix(LE$embedding)
     pData(sce)$connected_component <- LE$connected_component
     
-    validObject(sce)
+    methods::validObject(sce)
     return(sce)
 }
 
@@ -79,6 +79,7 @@ embeddr <- function(sce, genes_for_embedding = NULL, kernel = c("nn", "dist", "h
 #' }
 #'
 #' @importFrom lsa cosine
+#' @importFrom stats cor dist
 #'
 #' @export
 #' @return An n by n adjacency matrix
@@ -100,11 +101,11 @@ weighted_graph <- function(x, kernel = c("nn", "dist", "heat"), metric = c("corr
     ## compute distance matrix
     dm <- NULL
     if (metric == "euclidean") {
-        dm <- as.matrix(dist(t(x)))
+        dm <- as.matrix(stats::dist(t(x)))
     } else if (metric == "correlation") {
-        dm <- cor(x, method = "pearson")
+        dm <- stats::cor(x, method = "pearson")
     } else if (metric == "cosine") {
-        dm <- cosine(x)
+        dm <- lsa::cosine(x)
     }
     
     W <- NULL
@@ -159,7 +160,7 @@ weighted_graph <- function(x, kernel = c("nn", "dist", "heat"), metric = c("corr
 #' cutoff seems to be around 1e-10. If more than one zero eigenvalue is found but this is inconsistent
 #' with the number of connected clusters then the user will be warned to adjust eig_tol.
 #'
-#' @import igraph
+#' @importFrom igraph graph.adjacency clusters no.clusters
 #'
 #' @export
 #'
@@ -202,11 +203,11 @@ laplacian_eigenmap <- function(W, measure_type = c("unorm", "norm"), p = 2, eig_
     
     if (sum(eig$values < eig_tol) > 1) {
         warning(paste("More than one non-zero eigenvalue - disjoint clusters."))
-        g <- graph.adjacency(ceiling(W), mode = "undirected")
-        if (no.clusters(g) != sum(eig$values < eig_tol)) {
+        g <- igraph::graph.adjacency(ceiling(W), mode = "undirected")
+        if (igraph::no.clusters(g) != sum(eig$values < eig_tol)) {
             stop("Number of connected components doesn't match number of eigenvalues of the laplacian identified as zero. Consider changing eig_tol")
         }
-        cc <- clusters(g)$membership
+        cc <- igraph::clusters(g)$membership
     } else {
         cc <- rep(1, l)
     }
@@ -242,9 +243,7 @@ remove_pseudotime <- function(sce) {
 #' @param method Either 'kmeans' or 'mm' to use \code{mclust}
 #' @export
 #' @import mclust
-#' @importFrom dplyr select
-#' @importFrom Biobase pData
-#' @importFrom Biobase pData<-
+#' @importFrom stats kmeans
 #'
 #' @return The dataframe M with a new numeric variable `cluster` containing the assigned cluster
 #' @examples
@@ -256,7 +255,7 @@ cluster_embedding <- function(sce, method = c("mm", "kmeans"), k = NULL) {
     M_xy <- redDim(sce)
     method <- match.arg(method)
     if (method == "kmeans") {
-        km <- kmeans(M_xy, k)
+        km <- stats::kmeans(M_xy, k)
         pData(sce)$cluster <- km$cluster
     } else if (method == "mm") {
         mc <- Mclust(M_xy, G = k)
@@ -274,7 +273,6 @@ cluster_embedding <- function(sce, method = c("mm", "kmeans"), k = NULL) {
 #' all points are used
 #' @param ... Additional arguments to be passed to \code{princurve} from \pkg{principal.curve}.
 #'
-#' @importFrom dplyr select
 #' @importFrom princurve principal.curve
 #'
 #' @export
@@ -341,8 +339,7 @@ fit_pseudotime <- function(sce, clusters = NULL, ...) {
 #' pData(sce)$pseudotime is null then this is ignored
 #'
 #' @import ggplot2
-#' @importFrom dplyr select
-#' @importFrom dplyr arrange
+#' @importFrom utils installed.packages
 #' @export
 #'
 #' @return A \pkg{ggplot2} plot
@@ -433,7 +430,7 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
     }
     plt <- plt + xlab("Component 1") + ylab("Component 2")
     
-    if ("cowplot" %in% installed.packages()[, "Package"]) {
+    if ("cowplot" %in% utils::installed.packages()[, "Package"]) {
         requireNamespace("cowplot")
         plt <- plt + cowplot::theme_cowplot()
     } else {
@@ -465,7 +462,6 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
 #' @export
 #' @import ggplot2
 #' @importFrom reshape2 melt
-#' @importFrom Biobase fData
 #' 
 #' @return A \pkg{ggplot2} plot
 #' 
@@ -543,7 +539,6 @@ reverse_pseudotime <- function(sce) {
 #'
 #' @export
 #' @import ggplot2
-#' @importFrom dplyr select
 #' @importFrom plyr mapvalues
 #'
 #' @return A ggplot graphic
@@ -597,8 +592,8 @@ plot_graph <- function(sce) {
 #' @export
 #' @importFrom AER tobit
 #' @importFrom splines bs
-#' @importFrom survival survreg
-#' @importFrom survival Surv
+#' @importFrom survival survreg Surv
+#' @importFrom stats runif
 #'
 #' @return An object of class AER::tobit
 #' @examples
@@ -620,7 +615,7 @@ fit_pseudotime_model <- function(sce, gene, ...) {
     # add check for when all values are below the detection limit, 
     # so AER::tobit does not throw an error
     if (all(y <= min_expr)) {
-      y <- runif(length(y), 0, .000001)
+      y <- stats::runif(length(y), 0, .000001)
     }
     
     b <- splines::bs(t, df = 3)
@@ -806,6 +801,8 @@ gene_pseudotime_test <- function(sce, gene, full_model = NULL) {
 #' the Benjamini-Hochberg adjusted q-value. Note that different multiple testing corrections
 #' can be applied using the R function \code{p.adjust}.
 #'
+#' @importFrom stats p.adjust
+#'
 #' @export
 #' @examples 
 #' library(scaterlegacy)
@@ -820,7 +817,7 @@ pseudotime_test <- function(sce, n_cores = 2) {
     } else {
         p_vals <- unlist(mclapply(featureNames(sce), function(gene_name) gene_pseudotime_test(sce, gene_name)))
     }
-    q_vals <- p.adjust(p_vals, method = "BH")
+    q_vals <- stats::p.adjust(p_vals, method = "BH")
     return(data.frame(gene = featureNames(sce), p_val = p_vals, q_val = q_vals))
 }
 
@@ -869,8 +866,9 @@ fit_pseudotime_models <- function(sce, n_cores = 2, ...) {
 #' 
 #' @return A dataframe of predicted expression where rows are cells (pseudotime) and
 #' columns are genes
+#' 
+#' @importFrom stats predict
 #'
-#' @importFrom Biobase featureNames
 #' @export
 #' @examples 
 #' library(scaterlegacy)
@@ -884,7 +882,7 @@ predicted_expression <- function(sce, models = NULL, n_cores = 2) {
             predict_list <- lapply(models, function(x) predict(x))
             return(do.call("cbind", predict_list))
         } else {
-            return(predict(models))
+            return(stats::predict(models))
         }
     } else {
         ## want to calculate models one-at-a-time to make sure they don't take up too much space in memory
@@ -896,7 +894,7 @@ predicted_expression <- function(sce, models = NULL, n_cores = 2) {
                 return(NULL)
             }
             names_not_null <<- c(names_not_null, gene_name)
-            return(predict(fit))
+            return(stats::predict(fit))
         })
         pred_mat <- do.call("cbind", predict_list)
         colnames(pred_mat) <- names_not_null
@@ -977,6 +975,8 @@ plot_pseudotime_metrics <- function(sce, ...) {
 #' @param gene The gene of interest on which to calculate the metrics
 #' @param window_size The size of the sliding window. By default taken to be half the number of cells
 #'
+#' @importFrom stats var
+#'
 #' @export
 #' @return An object of class `data.frame` where each column is a metric (window-averaged pseudotime,
 #' mean, variance, CV2, signal to noise ratio)
@@ -1000,7 +1000,7 @@ calculate_metrics <- function(sce, gene, window_size = NULL) {
         interval <- i:(i + window_size - 1)
         x <- mean(t[interval])
         y_mean <- mean(y[interval])
-        y_var <- var(y[interval])
+        y_var <- stats::var(y[interval])
         cv <- sqrt(y_var)/y_mean
         snr <- y_mean/sqrt(y_var)
         return(c(x, y_mean, y_var, cv, snr))

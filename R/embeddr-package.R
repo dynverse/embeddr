@@ -5,6 +5,7 @@
 #' 
 #' @importFrom scaterlegacy pData<- fData<- cellDist<- cellDist redDim<- redDim
 #' @importFrom Biobase fData pData exprs featureNames
+#' @import dplyr
 #'
 #' @name embeddr-package
 #' @docType package

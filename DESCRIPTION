@@ -23,7 +23,10 @@ Imports:
   Biobase,
   parallel,
   lsa,
-  igraph
+  igraph,
+  stats,
+  utils,
+  methods
 Suggests:
   NMF,
   monocle,
@@ -31,7 +34,7 @@ Suggests:
   knitr,
   cowplot,
   ggthemes,
-  BiocStyle,
+  BiocStyle
 Remotes:
   dynverse/scaterlegacy
 VignetteBuilder: knitr
