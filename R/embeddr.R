@@ -338,7 +338,6 @@ fit_pseudotime <- function(sce, clusters = NULL, ...) {
 #' @param plot_pseudotime If TRUE (default) the pseudotime curve (principal curve) is shown on the plot. If
 #' pData(sce)$pseudotime is null then this is ignored
 #'
-#' @import ggplot2
 #' @importFrom utils installed.packages
 #' @export
 #'
@@ -354,7 +353,7 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
     trajectory_1 <- trajectory_2 <- NULL
     plot_names <- NULL
     
-    M <- as.data.frame(redDim(sce))  # dplyr::select(pData(sce), component_1, component_2)
+    M <- as.data.frame(redDim(sce))
     
     if (ncol(M) < 2) 
         stop("Please call embeddr on SCESet first")
@@ -362,7 +361,7 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
     ## are we colouring by a factor?
     if (color_by %in% names(pData(sce))) {
         col <- match(color_by, names(pData(sce)))
-        M <- cbind(M, dplyr::select(pData(sce), col))
+        M <- cbind(M, select(pData(sce), col))
     }
     
     ## are we plotting pseudotime?
@@ -460,8 +459,6 @@ plot_embedding <- function(sce, color_by = "cluster", plot_genes = NULL, use_sho
 #' @param y_lab Y-axis label for plot.
 #' 
 #' @export
-#' @import ggplot2
-#' @importFrom reshape2 melt
 #' 
 #' @return A \pkg{ggplot2} plot
 #' 
@@ -483,7 +480,7 @@ plot_in_pseudotime <- function(sce, nrow = NULL, ncol = NULL,
     
     cn <- !is.null(color_by) && color_by %in% names(pData(sce))
     if (cn) {
-        xp <- cbind(xp, dplyr::select(pData(sce), contains(color_by)))
+        xp <- cbind(xp, select(pData(sce), contains(color_by)))
         names(xp)[ncol(xp)] <- color_by
     }
     
@@ -538,7 +535,6 @@ reverse_pseudotime <- function(sce) {
 #' @param sce An object of class \code{SCESet}
 #'
 #' @export
-#' @import ggplot2
 #' @importFrom plyr mapvalues
 #'
 #' @return A ggplot graphic
@@ -552,7 +548,7 @@ plot_graph <- function(sce) {
     component_1 <- component_2 <- NULL
     x <- y <- NULL
     
-    df <- dplyr::rename(as.data.frame(redDim(sce)), x = component_1, y = component_2)
+    df <- rename(as.data.frame(redDim(sce)), x = component_1, y = component_2)
     # select(pData(sce), x = component_1, y = component_2)
     W <- as.matrix(cellDist(sce))
     
@@ -662,8 +658,6 @@ fit_null_model <- function(sce, gene) {
 #' sce@@lowerDetectionLimit will be set to sce@@lowerDetectionLimit
 #' @param line_color The colour of the predicted expression line to draw
 #'
-#' @import ggplot2
-#' @importFrom reshape2 melt
 #' @export
 #'
 #' @return An plot object from \code{ggplot}
@@ -698,7 +692,7 @@ plot_pseudotime_model <- function(sce, models = NULL, n_cores = 2,
     
     cn <- !is.null(color_by) && color_by %in% names(pData(sce))
     if(cn) {
-      y <- cbind(y, dplyr::select(pData(sce), contains(color_by)))
+      y <- cbind(y, select(pData(sce), contains(color_by)))
       names(y)[ncol(y)] <- color_by
       id_vars <- c(id_vars, color_by)
     }
@@ -709,7 +703,7 @@ plot_pseudotime_model <- function(sce, models = NULL, n_cores = 2,
     pe$pseudotime <- pseudotime(sce)
     pe_melted <- melt(pe, id.vars = "pseudotime", value.name = "predicted", variable.name = "gene")
     
-    df <- dplyr::full_join(y_melted, pe_melted, by = c("pseudotime", "gene"))
+    df <- full_join(y_melted, pe_melted, by = c("pseudotime", "gene"))
     
     if(mask_min_expr)
       df$predicted[df$predicted < min_expr] <- min_expr
@@ -776,12 +770,12 @@ compare_models <- function(model, null_model) {
 gene_pseudotime_test <- function(sce, gene, full_model = NULL) {
     tryCatch({
         if (is.null(full_model)) {
-            model <- embeddr::fit_pseudotime_model(sce, gene)
+            model <- fit_pseudotime_model(sce, gene)
         } else {
             model <- full_model
         }
-        null_model <- embeddr::fit_null_model(sce, gene)
-        return(embeddr::compare_models(model, null_model))
+        null_model <- fit_null_model(sce, gene)
+        return(compare_models(model, null_model))
     }, error = function(e) {
         return(1)  # if there's an error, just return -1
     })
@@ -910,7 +904,6 @@ predicted_expression <- function(sce, models = NULL, n_cores = 2) {
 #' @param reverse Logical If true the pseudotime will be reversed.
 #' @param color_by The variable (in \code{pData(sce)}) by which to colour the density plot.
 #'
-#' @import ggplot2
 #' @export
 #' @return A `ggplot` object
 #' @examples
@@ -950,8 +943,6 @@ plot_pseudotime_density <- function(sce, color_by = NULL, reverse = FALSE) {
 #' @param ... Additional arguments to be passed to \code{calculate_metrics} concerning
 #' how the metrics are calculated.
 #'
-#' @import ggplot2
-#' @importFrom reshape2 melt
 #' @export
 #' @return A ggplot graphic
 #' @examples
