@@ -11,7 +11,7 @@ biocViews: RNASeq, GeneExpression, Visualization
 Imports:
   scaterlegacy, 
   ggplot2,
-  princurve,
+  princurve (>= 2.1.2),
   plyr,
   dplyr,
   mclust,

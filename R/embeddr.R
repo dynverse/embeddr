@@ -271,9 +271,9 @@ cluster_embedding <- function(sce, method = c("mm", "kmeans"), k = NULL) {
 #' @param sce The SCESet object
 #' @param clusters The (numeric) clusters to use for the curve fitting. If NULL (default) then
 #' all points are used
-#' @param ... Additional arguments to be passed to \code{princurve} from \pkg{principal.curve}.
+#' @param ... Additional arguments to be passed to \code{princurve} from \pkg{principal_curve}.
 #'
-#' @importFrom princurve principal.curve
+#' @importFrom princurve principal_curve
 #'
 #' @export
 #'
@@ -300,7 +300,7 @@ fit_pseudotime <- function(sce, clusters = NULL, ...) {
     
     Mcl <- M[cells_in_cluster, ]
     X <- as.matrix(select(Mcl, component_1, component_2))
-    pc <- principal.curve(x = X, ...)
+    pc <- principal_curve(x = X, ...)
     pst <- pc$lambda
     
     ## rescale pseudotimes to be in [0, 1]

@@ -12,7 +12,7 @@ fit_pseudotime(sce, clusters = NULL, ...)
 \item{clusters}{The (numeric) clusters to use for the curve fitting. If NULL (default) then
 all points are used}
 
-\item{...}{Additional arguments to be passed to \code{princurve} from \pkg{principal.curve}.}
+\item{...}{Additional arguments to be passed to \code{princurve} from \pkg{principal_curve}.}
 }
 \value{
 The modified \code{SCESet} with the following fields added to pData:
